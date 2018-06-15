@@ -45,6 +45,19 @@
 / {
 	model = "FriendlyArm NanoPi M1 Plus";
 	compatible = "friendlyarm,nanopi-m1-plus", "allwinner,sun8i-h3";
+
+
+       reg_gmac_3v3: gmac-3v3 {
+               compatible = "regulator-fixed";
+//               pinctrl-names = "default";
+//               pinctrl-0 = <&gmac_power_pin_nanopi_m1_plus>;
+               regulator-name = "gmac-3v3";
+               regulator-min-microvolt = <3300000>;
+               regulator-max-microvolt = <3300000>;
+               startup-delay-us = <100000>;
+               enable-active-high;
+               gpio = <&pio 3 6 GPIO_ACTIVE_HIGH>;
+       };
 };
 
 &ehci1 {
@@ -53,6 +66,25 @@
 
 &ehci2 {
 	status = "okay";
+};
+
+&emac {
+       /* The Nanopi M1 Plus uses an external phy */
+       pinctrl-names = "default";
+       pinctrl-0 = <&emac_rgmii_pins>;
+       phy-supply = <&reg_gmac_3v3>;
+       phy-mode = "rgmii";
+       /delete-property/allwinner,use-internal-phy;
+       phy-handle = <&ext_rgmii_phy>;
+
+       status = "okay";
+};
+
+&external_mdio {
+	ext_rgmii_phy: ethernet-phy@1 {
+		compatible = "ethernet-phy-ieee802.3-c22";
+		reg = <7>;
+	};
 };
 
 &ohci1 {
